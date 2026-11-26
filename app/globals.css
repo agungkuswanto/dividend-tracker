@@ -1,0 +1,148 @@
+/* Tiga baris ini WAJIB ada supaya Tailwind bekerja. */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* =============================================================
+   TOKEN WARNA TEMA (CSS variables)
+   Nilainya ditulis sebagai 3 angka RGB (mis. "15 22 35") supaya
+   bisa dipakai dengan transparansi di Tailwind, mis. bg-gold/10.
+   Tailwind memetakan warna "navy, card, gold, ..." ke variabel ini
+   (lihat tailwind.config.ts). Ganti tema = ganti nilai variabel.
+   ============================================================= */
+
+/* Catatan token tambahan:
+   --c-line     : warna garis/overlay (putih di tema gelap, gelap di tema terang)
+   --c-on-accent: warna teks DI ATAS tombol aksen (gelap di tema gelap karena
+                  aksennya terang; putih di tema terang karena aksennya tua) */
+
+/* Tema default = Midnight Gold (navy + emas) */
+:root,
+:root[data-theme="midnight"] {
+  --c-bg: 15 22 35;      /* #0f1623 background */
+  --c-card: 24 34 52;    /* #182234 kartu */
+  --c-soft: 31 43 64;    /* #1f2b40 kartu-dalam */
+  --c-gold: 245 195 59;  /* #f5c33b aksen */
+  --c-gain: 52 211 153;  /* hijau untung */
+  --c-loss: 248 113 113; /* merah rugi */
+  --c-muted: 139 152 173;/* teks abu */
+  --c-text: 231 236 243; /* teks utama */
+  --c-line: 255 255 255; /* garis/overlay (putih, dipakai transparan) */
+  --c-on-accent: 15 22 35; /* teks di atas aksen (gelap) */
+}
+
+/* Emerald Finance (hijau "uang tumbuh") */
+:root[data-theme="emerald"] {
+  --c-bg: 10 21 18;
+  --c-card: 18 32 25;
+  --c-soft: 27 46 36;
+  --c-gold: 52 211 153;
+  --c-gain: 74 222 128;
+  --c-loss: 248 113 113;
+  --c-muted: 138 166 153;
+  --c-text: 230 240 234;
+  --c-line: 255 255 255;
+  --c-on-accent: 10 21 18;
+}
+
+/* Indigo Fintech (indigo modern) */
+:root[data-theme="indigo"] {
+  --c-bg: 13 16 37;
+  --c-card: 22 26 56;
+  --c-soft: 31 36 80;
+  --c-gold: 129 140 248;
+  --c-gain: 52 211 153;
+  --c-loss: 251 113 133;
+  --c-muted: 154 160 196;
+  --c-text: 229 231 245;
+  --c-line: 255 255 255;
+  --c-on-accent: 13 16 37;
+}
+
+/* Slate Pro (dingin, profesional) */
+:root[data-theme="slate"] {
+  --c-bg: 15 23 42;
+  --c-card: 30 41 59;
+  --c-soft: 51 65 85;
+  --c-gold: 56 189 248;
+  --c-gain: 34 197 94;
+  --c-loss: 239 68 68;
+  --c-muted: 148 163 184;
+  --c-text: 226 232 240;
+  --c-line: 255 255 255;
+  --c-on-accent: 15 23 42;
+}
+
+/* Daylight (MODE TERANG) */
+:root[data-theme="light"] {
+  --c-bg: 248 250 252;   /* #f8fafc latar terang */
+  --c-card: 255 255 255; /* kartu putih */
+  --c-soft: 241 245 249; /* #f1f5f9 kartu-dalam */
+  --c-gold: 202 138 4;   /* #ca8a04 emas tua (kontras di latar terang) */
+  --c-gain: 22 163 74;   /* #16a34a hijau tua */
+  --c-loss: 220 38 38;   /* #dc2626 merah tua */
+  --c-muted: 100 116 139;/* #64748b abu */
+  --c-text: 15 23 42;    /* #0f172a teks gelap */
+  --c-line: 15 23 42;    /* garis/overlay (gelap, dipakai transparan) */
+  --c-on-accent: 255 255 255; /* teks di atas aksen (putih) */
+}
+
+/* Style global: body memakai token tema + transisi halus saat ganti tema. */
+html,
+body {
+  padding: 0;
+  margin: 0;
+  background-color: rgb(var(--c-bg));
+  color: rgb(var(--c-text));
+  font-family: var(--font-jakarta), ui-sans-serif, system-ui, -apple-system,
+    "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* Angka enak dilihat dengan lebar angka seragam. */
+.nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* =============================================================
+   ANIMASI HALUS
+   - fadeIn  : lapisan gelap (overlay) modal muncul lembut
+   - panelIn : kartu modal naik sedikit + sedikit membesar
+   Menghormati "prefers-reduced-motion" (animasi dimatikan bila
+   pengguna memilih kurangi gerak di pengaturan OS).
+   ============================================================= */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes panelIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.anim-overlay {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.anim-panel {
+  animation: panelIn 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .anim-overlay,
+  .anim-panel {
+    animation: none;
+  }
+}
