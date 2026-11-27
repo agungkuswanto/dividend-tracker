@@ -309,15 +309,26 @@ export function hitungStatistik(stocks: Stock[]): Statistik {
 // (reinvest), nilai portofolio tahun depan lebih besar -> dividen tahun depan
 // ikut lebih besar -> makin lama makin cepat membesar. Itulah "bola salju".
 //
+// MODEL (dibuat jujur & realistis):
+//   - "yield" = dividend yield, dianggap TETAP tiap tahun (mis. 8%). Saat harga
+//     saham naik, DPS biasanya ikut naik, jadi yield-nya relatif stabil.
+//   - "apresiasi" = kenaikan HARGA saham per tahun (%), menambah nilai aset.
+//   Jadi total imbal hasil bila reinvest = apresiasi + yield.
+//
+//   PENTING: yield TIDAK dibuat "meledak". Model lama mengalikan yield dengan
+//   (1+g)^tahun sehingga di tahun ke-15 yield bisa jadi 20%+ (tidak masuk akal).
+//   Sekarang yield tetap, dan pertumbuhan diwujudkan sebagai apresiasi harga.
+//
 // Simulasi membandingkan 2 skenario:
-//   - DENGAN reinvest : dividen diputar kembali jadi modal.
-//   - TANPA reinvest  : dividen diambil tunai; modal hanya bertambah dari setoran.
+//   - DENGAN reinvest : dividen diputar kembali jadi modal (bola salju).
+//   - TANPA reinvest  : dividen diambil tunai; aset tetap naik dari apresiasi
+//                       harga + setoran, tapi tanpa tambahan dari dividen.
 
 // Asumsi yang bisa diatur pengguna.
 export interface ParamSnowball {
   nilaiAwal: number; // nilai portofolio saat ini (Rp)
-  yieldPersen: number; // dividend yield per tahun (% dari nilai)
-  pertumbuhanPersen: number; // kenaikan dividen per tahun (%), mis. perusahaan naikkan DPS
+  yieldPersen: number; // dividend yield per tahun (% dari nilai), dianggap tetap
+  pertumbuhanPersen: number; // apresiasi HARGA saham per tahun (%), menambah nilai aset
   setoranBulanan: number; // tambahan modal rutin tiap bulan (Rp)
   tahun: number; // lama proyeksi (tahun)
 }
@@ -336,8 +347,8 @@ export function simulasiSnowball(p: ParamSnowball): BarisSnowball[] {
   const hasil: BarisSnowball[] = [];
 
   // Ubah persen -> pecahan (mis. 5% -> 0,05).
-  const y = p.yieldPersen / 100;
-  const g = p.pertumbuhanPersen / 100;
+  const y = p.yieldPersen / 100; // yield dividen (tetap)
+  const g = p.pertumbuhanPersen / 100; // apresiasi harga saham
   const setoranTahunan = p.setoranBulanan * 12;
 
   // Dua "dompet" terpisah supaya skenario tidak saling memengaruhi.
@@ -345,18 +356,17 @@ export function simulasiSnowball(p: ParamSnowball): BarisSnowball[] {
   let nilaiT = p.nilaiAwal; // tanpa reinvest
 
   for (let t = 1; t <= p.tahun; t++) {
-    // Yield efektif naik tiap tahun karena dividen (DPS) diasumsikan tumbuh.
-    // Tahun ke-1 pakai yield awal; tahun berikutnya dikali (1+g) berpangkat.
-    const yieldT = y * Math.pow(1 + g, t - 1);
+    // Dividen tahun ini = yield TETAP × nilai di AWAL tahun.
+    const dividenR = nilaiR * y;
+    const dividenT = nilaiT * y;
 
-    // Dividen tahun ini dihitung dari nilai di AWAL tahun.
-    const dividenR = nilaiR * yieldT;
-    const dividenT = nilaiT * yieldT;
+    // DENGAN reinvest: nilai naik dari apresiasi harga (×(1+g)) + dividen
+    // yang diputar balik jadi modal + setoran rutin.
+    nilaiR = nilaiR * (1 + g) + dividenR + setoranTahunan;
 
-    // Reinvest: dividen + setoran masuk kembali jadi modal.
-    nilaiR = nilaiR + dividenR + setoranTahunan;
-    // Tanpa reinvest: dividen diambil tunai; modal hanya tumbuh dari setoran.
-    nilaiT = nilaiT + setoranTahunan;
+    // TANPA reinvest: dividen diambil tunai. Nilai tetap naik dari apresiasi
+    // harga + setoran, tapi tidak mendapat tambahan dari dividen.
+    nilaiT = nilaiT * (1 + g) + setoranTahunan;
 
     hasil.push({
       tahun: t,

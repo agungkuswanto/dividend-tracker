@@ -234,11 +234,23 @@ describe("simulasiSnowball", () => {
     expect(h[2].nilaiReinvest).toBeGreaterThan(h[2].nilaiTanpa);
   });
 
-  it("pertumbuhan dividen menaikkan yield efektif tiap tahun", () => {
-    // yield 10% + tumbuh 20%/th. Tahun 2 yield efektif = 12%.
+  it("apresiasi harga menambah nilai aset, yield tetap", () => {
+    // yield 10% (tetap) + apresiasi harga 20%/th, modal 1jt, reinvest.
     const h = simulasiSnowball({ ...dasar, pertumbuhanPersen: 20 });
-    // Nilai akhir tahun 1 = 1,1jt; dividen tahun 2 = 1,1jt × 12% = 132.000.
-    expect(h[1].dividenReinvest).toBeCloseTo(132_000, 5);
+    // Tahun 1: dividen = 1jt × 10% = 100.000.
+    expect(h[0].dividenReinvest).toBe(100_000);
+    // Nilai akhir tahun 1 = 1jt×1,2 (apresiasi) + 100.000 (dividen) = 1.300.000.
+    expect(h[0].nilaiReinvest).toBeCloseTo(1_300_000, 5);
+    // Tahun 2: dividen = 1,3jt × 10% = 130.000 (yield tetap 10%, tidak meledak).
+    expect(h[1].dividenReinvest).toBeCloseTo(130_000, 5);
+  });
+
+  it("tanpa reinvest, nilai tetap naik dari apresiasi harga", () => {
+    // yield 10%, apresiasi 8%/th, tanpa setoran, modal 1jt.
+    const h = simulasiSnowball({ ...dasar, pertumbuhanPersen: 8 });
+    // Tanpa reinvest: nilai hanya naik dari apresiasi harga (×1,08 tiap tahun).
+    expect(h[0].nilaiTanpa).toBeCloseTo(1_080_000, 5);
+    expect(h[1].nilaiTanpa).toBeCloseTo(1_166_400, 5); // 1jt × 1,08²
   });
 
   it("setoran bulanan menambah modal walau tanpa reinvest", () => {

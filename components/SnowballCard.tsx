@@ -5,8 +5,8 @@
 // Proyeksi pertumbuhan dividen bertahun-tahun bila dividen
 // direinvestasi. Pengguna mengatur 4 asumsi lewat slider/input:
 //   - lama proyeksi (tahun)
-//   - yield (% dividen per tahun)
-//   - pertumbuhan dividen (% per tahun)
+//   - yield (% dividen per tahun, dianggap tetap)
+//   - pertumbuhan harga saham / apresiasi (% per tahun)
 //   - setoran rutin (Rp per bulan)
 // Grafik membandingkan 2 skenario: DENGAN vs TANPA reinvest.
 // =============================================================
@@ -253,7 +253,7 @@ export default function SnowballCard({ nilaiAwal, dividenTahunan }: Props) {
         />
 
         <Slider
-          label="Pertumbuhan dividen / tahun"
+          label="Pertumbuhan harga saham / tahun"
           nilai={pertumbuhan}
           setNilai={setPertumbuhan}
           min={0}
