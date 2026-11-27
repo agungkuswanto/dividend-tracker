@@ -229,13 +229,19 @@ export default function Home() {
             </div>
           </div>
           {/* Ambil harga terakhir dari Yahoo Finance (delay ±15 menit). */}
-          <div className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-1">
-            <UpdateHargaButton stocks={stocks} onHarga={perbaruiHarga} />
-            {hargaUpdatedAt && (
-              <span className="text-[11px] text-muted">
-                Diperbarui {formatTanggalWaktu(new Date(hargaUpdatedAt))}
-              </span>
-            )}
+          <div className="mb-3">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+              <UpdateHargaButton stocks={stocks} onHarga={perbaruiHarga} />
+              {hargaUpdatedAt && (
+                <span className="text-[11px] text-muted">
+                  Diperbarui {formatTanggalWaktu(new Date(hargaUpdatedAt))}
+                </span>
+              )}
+            </div>
+            <p className="mt-1 text-[11px] text-muted">
+              Memperbarui harga terakhir &amp; nama perusahaan semua saham dari
+              Yahoo Finance (delay ±15 menit). Jadwal dividen tidak diubah.
+            </p>
           </div>
           <HoldingsList
             stocks={sahamTerurut}
