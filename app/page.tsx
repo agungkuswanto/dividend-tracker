@@ -238,7 +238,7 @@ export default function Home() {
                 </span>
               )}
             </div>
-            <p className="mt-1 text-[11px] text-muted">
+            <p className="mt-1 text-[10px] leading-snug text-muted">
               Memperbarui harga terakhir &amp; nama perusahaan semua saham dari
               Yahoo Finance (delay ±15 menit). Jadwal dividen tidak diubah.
             </p>
