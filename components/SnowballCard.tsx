@@ -103,6 +103,13 @@ export default function SnowballCard({ nilaiAwal, dividenTahunan }: Props) {
   // Baris terakhir = kondisi di akhir proyeksi.
   const akhir = data[data.length - 1];
 
+  // "Income panen": bila setelah periode snowball kita BERHENTI reinvest lalu
+  // menarik yield dari seluruh aset yang sudah terkumpul. Dihitung dari NILAI
+  // ASET AKHIR (bukan awal tahun) supaya sesuai cara umum: yield% × total aset.
+  const asetAkhir = akhir ? akhir.nilaiReinvest : 0;
+  const incomeTahunan = asetAkhir * (yieldPersen / 100);
+  const incomeBulanan = incomeTahunan / 12;
+
   // Total dividen yang diterima selama periode (untuk tiap skenario).
   const totalReinvest = data.reduce((t, d) => t + d.dividenReinvest, 0);
   const totalTanpa = data.reduce((t, d) => t + d.dividenTanpa, 0);
@@ -142,19 +149,21 @@ export default function SnowballCard({ nilaiAwal, dividenTahunan }: Props) {
       </p>
 
       {/* ---------- SOROTAN HASIL ---------- */}
+      {/* Mencerminkan cara umum berpikir: setelah N tahun, nilai aset jadi
+          sekian, lalu income/bulan = yield% × nilai aset akhir ÷ 12. */}
       <div className="mt-4 flex items-end justify-between gap-3">
         <div>
           <div className="text-[11px] text-muted">
-            Proyeksi dividen di tahun ke-{tahun}
+            Income per bulan di tahun ke-{tahun} (yield {yieldPersen}%)
           </div>
           <div className="flex items-baseline gap-1">
             <span className="text-base font-semibold text-gold/70">Rp</span>
             <span className="nums text-3xl font-extrabold tracking-tight text-gold md:text-4xl">
-              {formatRibuan(akhir ? akhir.dividenReinvest : 0)}
+              {formatRibuan(incomeBulanan)}
             </span>
           </div>
           <div className="text-[11px] text-muted">
-            ± {formatSingkat(akhir ? akhir.dividenReinvest / 12 : 0)}/bulan
+            dari nilai aset akhir {formatSingkat(asetAkhir)}
           </div>
         </div>
       </div>
