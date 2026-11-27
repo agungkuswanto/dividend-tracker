@@ -84,7 +84,10 @@ export default function SnowballCard({ nilaiAwal, dividenTahunan }: Props) {
   // --- Asumsi yang bisa diubah pengguna ---
   const [tahun, setTahun] = useState(5);
   const [yieldPersen, setYieldPersen] = useState(yieldDefault);
-  const [pertumbuhan, setPertumbuhan] = useState(5);
+  // Default apresiasi 0% = model compound murni (hanya dividen diputar balik),
+  // supaya hasil awal tidak "menggelembung". Pengguna bisa menaikkannya bila
+  // ingin ikut memperhitungkan kenaikan harga saham.
+  const [pertumbuhan, setPertumbuhan] = useState(0);
   const [setoran, setSetoran] = useState(""); // string digit (Rp/bln), kosong = 0
 
   // Jalankan simulasi. useMemo = hitung ulang HANYA bila ada asumsi berubah.
@@ -270,6 +273,16 @@ export default function SnowballCard({ nilaiAwal, dividenTahunan }: Props) {
           step={1}
           suffix="%"
         />
+
+        {/* Pengingat: saat reinvest, nilai aset tumbuh dari yield + apresiasi.
+            Membantu pengguna paham kenapa angka naik bila apresiasi dinaikkan. */}
+        <p className="text-[11px] text-muted">
+          Total imbal hasil saat reinvest ≈{" "}
+          <span className="nums font-semibold text-ink">
+            {(yieldPersen + pertumbuhan).toFixed(1)}%
+          </span>
+          /tahun (yield {yieldPersen}% + apresiasi {pertumbuhan}%).
+        </p>
 
         {/* Setoran rutin: input teks dengan titik ribuan + awalan "Rp". */}
         <label className="block">
