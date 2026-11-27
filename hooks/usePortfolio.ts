@@ -79,7 +79,8 @@ export function usePortfolio() {
   // Perbarui harga sekarang (currentPrice) + nama untuk saham yang kodenya cocok.
   // "data" = { "BBRI": { harga: 3070, nama: "..." } }. Kode dibandingkan tanpa
   // peduli huruf besar/kecil. Saham yang tidak ada di data dibiarkan apa adanya.
-  // Nama hanya diisi bila kolom nama MASIH KOSONG (jangan timpa nama custom).
+  // Nama DISELARASKAN ke nama resmi Yahoo bila tersedia (menimpa nama lama);
+  // bila Yahoo tidak mengirim nama, nama lama dipertahankan.
   const perbaruiHarga = (data: Record<string, DataSaham>) => {
     setStocks((prev) =>
       prev.map((s) => {
@@ -88,7 +89,7 @@ export function usePortfolio() {
         return {
           ...s,
           currentPrice: d.harga,
-          name: s.name && s.name.trim() ? s.name : d.nama ?? s.name,
+          name: d.nama ?? s.name,
         };
       })
     );
