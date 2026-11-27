@@ -18,14 +18,20 @@ import { NextRequest, NextResponse } from "next/server";
 // Jangan cache hasilnya — kita ingin harga terbaru tiap dipanggil.
 export const dynamic = "force-dynamic";
 
-// Bentuk jawaban: harga yang berhasil + daftar kode yang gagal.
+// Data satu saham: harga terakhir + nama perusahaan (bila ada).
+export interface DataSaham {
+  harga: number;
+  nama?: string;
+}
+
+// Bentuk jawaban: data yang berhasil + daftar kode yang gagal.
 interface JawabanHarga {
-  hasil: Record<string, number>; // { "BBRI": 3070, "TLKM": 2800 }
+  hasil: Record<string, DataSaham>; // { "BBRI": { harga: 3070, nama: "..." } }
   gagal: string[]; // kode yang tidak dapat harga
 }
 
-// Mengambil 1 harga saham dari Yahoo. Kembalikan angka, atau null bila gagal.
-async function ambilSatu(kode: string): Promise<number | null> {
+// Mengambil data 1 saham dari Yahoo. Kembalikan {harga, nama}, atau null bila gagal.
+async function ambilSatu(kode: string): Promise<DataSaham | null> {
   try {
     // Saham IDX di Yahoo memakai akhiran ".JK" (mis. BBRI -> BBRI.JK).
     const url = `https://query1.finance.yahoo.com/v8/finance/chart/${kode}.JK?interval=1d&range=1d`;
@@ -38,9 +44,17 @@ async function ambilSatu(kode: string): Promise<number | null> {
     if (!res.ok) return null;
 
     const data = await res.json();
-    // Harga ada di: chart.result[0].meta.regularMarketPrice
-    const harga = data?.chart?.result?.[0]?.meta?.regularMarketPrice;
-    return typeof harga === "number" ? harga : null;
+    const meta = data?.chart?.result?.[0]?.meta;
+    const harga = meta?.regularMarketPrice;
+    if (typeof harga !== "number") return null;
+
+    // Nama perusahaan: pakai shortName (lebih ringkas), cadangan longName.
+    const nama: string | undefined =
+      (typeof meta?.shortName === "string" && meta.shortName) ||
+      (typeof meta?.longName === "string" && meta.longName) ||
+      undefined;
+
+    return { harga, nama };
   } catch {
     // Jaringan error / JSON rusak / format berubah -> anggap gagal.
     return null;
@@ -66,11 +80,11 @@ export async function GET(req: NextRequest) {
 
   const jawaban: JawabanHarga = { hasil: {}, gagal: [] };
 
-  // Ambil semua harga secara paralel (lebih cepat daripada satu per satu).
+  // Ambil semua data secara paralel (lebih cepat daripada satu per satu).
   await Promise.all(
     kodeTerbatas.map(async (kode) => {
-      const harga = await ambilSatu(kode);
-      if (harga != null) jawaban.hasil[kode] = harga;
+      const data = await ambilSatu(kode);
+      if (data != null) jawaban.hasil[kode] = data;
       else jawaban.gagal.push(kode);
     })
   );

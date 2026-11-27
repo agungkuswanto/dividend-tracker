@@ -9,7 +9,7 @@
 
 import { useState } from "react";
 import { Stock } from "@/lib/types";
-import { ambilHarga } from "@/lib/hargaApi";
+import { ambilHarga, petaHarga } from "@/lib/hargaApi";
 
 interface Props {
   stocks: Stock[];
@@ -35,7 +35,8 @@ export default function UpdateHargaButton({ stocks, onHarga }: Props) {
     setPesan(null);
     try {
       const { hasil, gagal } = await ambilHarga(kode);
-      onHarga(hasil); // serahkan ke induk untuk menyimpan ke portofolio
+      // Update massal hanya butuh harga (nama tidak ditimpa di sini).
+      onHarga(petaHarga(hasil)); // serahkan ke induk untuk menyimpan ke portofolio
 
       const jml = Object.keys(hasil).length;
       setPesan(

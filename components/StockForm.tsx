@@ -95,15 +95,22 @@ export default function StockForm({
     setAmbilPesan("");
     try {
       const { hasil } = await ambilHarga([kode]);
-      const harga = hasil[kode];
-      if (typeof harga === "number") {
-        setCurrentPrice(String(harga));
-        setAmbilPesan(`Harga ${kode} terisi: ${harga.toLocaleString("id-ID")}`);
+      const data = hasil[kode];
+      if (data) {
+        setCurrentPrice(String(data.harga));
+
+        // Isi nama hanya bila kolom nama masih kosong (jangan timpa ketikan user).
+        if (data.nama && !name.trim()) setName(data.nama);
+
+        setAmbilPesan(
+          `${kode} terisi: ${data.harga.toLocaleString("id-ID")}` +
+            (data.nama ? ` · ${data.nama}` : "")
+        );
       } else {
-        setAmbilPesan(`Harga ${kode} tidak ditemukan.`);
+        setAmbilPesan(`Data ${kode} tidak ditemukan.`);
       }
     } catch {
-      setAmbilPesan("Gagal mengambil harga. Coba lagi.");
+      setAmbilPesan("Gagal mengambil data. Coba lagi.");
     } finally {
       setAmbilLoading(false);
     }
