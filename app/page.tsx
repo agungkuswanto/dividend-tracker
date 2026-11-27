@@ -233,7 +233,7 @@ export default function Home() {
             <UpdateHargaButton stocks={stocks} onHarga={perbaruiHarga} />
             {hargaUpdatedAt && (
               <span className="text-[11px] text-muted">
-                Harga per {formatTanggalWaktu(new Date(hargaUpdatedAt))}
+                Diperbarui {formatTanggalWaktu(new Date(hargaUpdatedAt))}
               </span>
             )}
           </div>

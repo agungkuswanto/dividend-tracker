@@ -58,7 +58,7 @@ export default function UpdateHargaButton({ stocks, onHarga }: Props) {
         disabled={loading}
         className="rounded-lg border border-line/10 bg-card px-3 py-1.5 text-xs font-medium text-ink transition hover:border-gold disabled:opacity-60"
       >
-        {loading ? "Memperbarui…" : "🔄 Perbarui harga"}
+        {loading ? "Memperbarui…" : "🔄 Perbarui info"}
       </button>
       {pesan && <span className="text-[11px] text-muted">{pesan}</span>}
     </div>
