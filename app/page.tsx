@@ -8,6 +8,7 @@ import {
   urutkanSaham,
   KunciUrut,
 } from "@/lib/calculations";
+import { formatTanggalWaktu } from "@/lib/format";
 import SummaryCard from "@/components/SummaryCard";
 import TargetCard from "@/components/TargetCard";
 import NextDividendCard from "@/components/NextDividendCard";
@@ -52,6 +53,7 @@ export default function Home() {
   const {
     stocks,
     loaded,
+    hargaUpdatedAt,
     addStock,
     updateStock,
     removeStock,
@@ -227,8 +229,13 @@ export default function Home() {
             </div>
           </div>
           {/* Ambil harga terakhir dari Yahoo Finance (delay ±15 menit). */}
-          <div className="mb-3">
+          <div className="mb-3 flex flex-wrap items-center gap-x-3 gap-y-1">
             <UpdateHargaButton stocks={stocks} onHarga={perbaruiHarga} />
+            {hargaUpdatedAt && (
+              <span className="text-[11px] text-muted">
+                Harga per {formatTanggalWaktu(new Date(hargaUpdatedAt))}
+              </span>
+            )}
           </div>
           <HoldingsList
             stocks={sahamTerurut}

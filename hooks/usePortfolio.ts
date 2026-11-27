@@ -17,6 +17,8 @@ import { DATA_CONTOH } from "@/lib/sampleData";
 
 // Kunci penyimpanan di localStorage.
 const STORAGE_KEY = "dividend-tracker:portfolio";
+// Kunci terpisah untuk waktu harga terakhir diperbarui (disimpan sbg angka ms).
+const WAKTU_KEY = "dividend-tracker:harga-updated";
 
 export function usePortfolio() {
   // Awali dengan array kosong supaya hasil render server & client sama
@@ -24,12 +26,19 @@ export function usePortfolio() {
   const [stocks, setStocks] = useState<Stock[]>([]);
   const [loaded, setLoaded] = useState(false);
 
+  // Waktu (ms epoch) harga terakhir diperbarui dari API; null = belum pernah.
+  const [hargaUpdatedAt, setHargaUpdatedAt] = useState<number | null>(null);
+
   // 1) Muat data sekali saat komponen pertama tampil di browser.
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
       // Kalau ada data tersimpan -> pakai itu. Kalau tidak -> data contoh.
       setStocks(raw ? (JSON.parse(raw) as Stock[]) : DATA_CONTOH);
+
+      // Muat juga waktu terakhir perbarui harga (bila ada).
+      const rawWaktu = localStorage.getItem(WAKTU_KEY);
+      if (rawWaktu) setHargaUpdatedAt(Number(rawWaktu) || null);
     } catch {
       // Kalau localStorage error (mis. mode privat), tetap tampilkan contoh.
       setStocks(DATA_CONTOH);
@@ -69,7 +78,7 @@ export function usePortfolio() {
   // Perbarui harga sekarang (currentPrice) untuk saham yang kodenya cocok.
   // "peta" = { "BBRI": 3070, "TLKM": 2800 }. Kode dibandingkan tanpa peduli
   // huruf besar/kecil. Saham yang tidak ada di peta dibiarkan apa adanya.
-  const perbaruiHarga = (peta: Record<string, number>) =>
+  const perbaruiHarga = (peta: Record<string, number>) => {
     setStocks((prev) =>
       prev.map((s) => {
         const harga = peta[s.code.toUpperCase()];
@@ -77,9 +86,22 @@ export function usePortfolio() {
       })
     );
 
+    // Catat waktu HANYA bila ada minimal satu harga yang berhasil diperbarui.
+    if (Object.keys(peta).length > 0) {
+      const sekarang = Date.now();
+      setHargaUpdatedAt(sekarang);
+      try {
+        localStorage.setItem(WAKTU_KEY, String(sekarang));
+      } catch {
+        // Abaikan bila gagal menyimpan.
+      }
+    }
+  };
+
   return {
     stocks,
     loaded,
+    hargaUpdatedAt,
     addStock,
     updateStock,
     removeStock,

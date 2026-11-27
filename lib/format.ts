@@ -67,3 +67,15 @@ export function formatTanggal(tanggal: Date = new Date()): string {
     year: "numeric",
   }).format(tanggal);
 }
+
+// Memformat tanggal + jam, dipakai untuk "harga terakhir diperbarui".
+// Contoh: "27 Nov 2026, 13.45"
+export function formatTanggalWaktu(tanggal: Date = new Date()): string {
+  return new Intl.DateTimeFormat("id-ID", {
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(tanggal);
+}
