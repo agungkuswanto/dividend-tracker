@@ -9,12 +9,12 @@
 
 import { useState } from "react";
 import { Stock } from "@/lib/types";
-import { ambilHarga, petaHarga } from "@/lib/hargaApi";
+import { ambilHarga, DataSaham } from "@/lib/hargaApi";
 
 interface Props {
   stocks: Stock[];
-  // Dipanggil dengan peta { KODE: harga } setelah berhasil ambil.
-  onHarga: (peta: Record<string, number>) => void;
+  // Dipanggil dengan data { KODE: { harga, nama } } setelah berhasil ambil.
+  onHarga: (data: Record<string, DataSaham>) => void;
 }
 
 export default function UpdateHargaButton({ stocks, onHarga }: Props) {
@@ -35,12 +35,13 @@ export default function UpdateHargaButton({ stocks, onHarga }: Props) {
     setPesan(null);
     try {
       const { hasil, gagal } = await ambilHarga(kode);
-      // Update massal hanya butuh harga (nama tidak ditimpa di sini).
-      onHarga(petaHarga(hasil)); // serahkan ke induk untuk menyimpan ke portofolio
+      // Kirim data lengkap (harga + nama). Hook akan mengisi nama hanya bila
+      // kolom nama saham masih kosong (nama custom tidak tertimpa).
+      onHarga(hasil);
 
       const jml = Object.keys(hasil).length;
       setPesan(
-        `${jml} harga diperbarui` +
+        `${jml} saham diperbarui (harga & nama)` +
           (gagal.length ? ` · ${gagal.length} gagal: ${gagal.join(", ")}` : "")
       );
     } catch {

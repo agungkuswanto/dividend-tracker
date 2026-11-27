@@ -14,6 +14,7 @@
 import { useEffect, useState } from "react";
 import { Stock } from "@/lib/types";
 import { DATA_CONTOH } from "@/lib/sampleData";
+import { DataSaham } from "@/lib/hargaApi";
 
 // Kunci penyimpanan di localStorage.
 const STORAGE_KEY = "dividend-tracker:portfolio";
@@ -75,19 +76,25 @@ export function usePortfolio() {
   // Ganti SELURUH portofolio sekaligus (dipakai saat impor backup).
   const gantiSemua = (baru: Stock[]) => setStocks(baru);
 
-  // Perbarui harga sekarang (currentPrice) untuk saham yang kodenya cocok.
-  // "peta" = { "BBRI": 3070, "TLKM": 2800 }. Kode dibandingkan tanpa peduli
-  // huruf besar/kecil. Saham yang tidak ada di peta dibiarkan apa adanya.
-  const perbaruiHarga = (peta: Record<string, number>) => {
+  // Perbarui harga sekarang (currentPrice) + nama untuk saham yang kodenya cocok.
+  // "data" = { "BBRI": { harga: 3070, nama: "..." } }. Kode dibandingkan tanpa
+  // peduli huruf besar/kecil. Saham yang tidak ada di data dibiarkan apa adanya.
+  // Nama hanya diisi bila kolom nama MASIH KOSONG (jangan timpa nama custom).
+  const perbaruiHarga = (data: Record<string, DataSaham>) => {
     setStocks((prev) =>
       prev.map((s) => {
-        const harga = peta[s.code.toUpperCase()];
-        return typeof harga === "number" ? { ...s, currentPrice: harga } : s;
+        const d = data[s.code.toUpperCase()];
+        if (!d) return s;
+        return {
+          ...s,
+          currentPrice: d.harga,
+          name: s.name && s.name.trim() ? s.name : d.nama ?? s.name,
+        };
       })
     );
 
-    // Catat waktu HANYA bila ada minimal satu harga yang berhasil diperbarui.
-    if (Object.keys(peta).length > 0) {
+    // Catat waktu HANYA bila ada minimal satu saham yang berhasil diperbarui.
+    if (Object.keys(data).length > 0) {
       const sekarang = Date.now();
       setHargaUpdatedAt(sekarang);
       try {

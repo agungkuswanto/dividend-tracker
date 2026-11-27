@@ -24,13 +24,3 @@ export async function ambilHarga(kode: string[]): Promise<HasilHarga> {
   if (!res.ok) throw new Error("Gagal menghubungi server harga");
   return res.json();
 }
-
-// Ubah hasil menjadi peta harga saja: { "BBRI": 3070 }.
-// Dipakai saat "Perbarui harga" massal yang hanya butuh harga.
-export function petaHarga(hasil: Record<string, DataSaham>): Record<string, number> {
-  const peta: Record<string, number> = {};
-  for (const kode of Object.keys(hasil)) {
-    peta[kode] = hasil[kode].harga;
-  }
-  return peta;
-}
