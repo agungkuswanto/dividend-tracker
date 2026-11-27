@@ -66,6 +66,17 @@ export function usePortfolio() {
   // Ganti SELURUH portofolio sekaligus (dipakai saat impor backup).
   const gantiSemua = (baru: Stock[]) => setStocks(baru);
 
+  // Perbarui harga sekarang (currentPrice) untuk saham yang kodenya cocok.
+  // "peta" = { "BBRI": 3070, "TLKM": 2800 }. Kode dibandingkan tanpa peduli
+  // huruf besar/kecil. Saham yang tidak ada di peta dibiarkan apa adanya.
+  const perbaruiHarga = (peta: Record<string, number>) =>
+    setStocks((prev) =>
+      prev.map((s) => {
+        const harga = peta[s.code.toUpperCase()];
+        return typeof harga === "number" ? { ...s, currentPrice: harga } : s;
+      })
+    );
+
   return {
     stocks,
     loaded,
@@ -74,5 +85,6 @@ export function usePortfolio() {
     removeStock,
     resetSample,
     gantiSemua,
+    perbaruiHarga,
   };
 }

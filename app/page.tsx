@@ -23,6 +23,7 @@ import StockDetail from "@/components/StockDetail";
 import ShareButton from "@/components/ShareButton";
 import BackupButtons from "@/components/BackupButtons";
 import ThemeSwitcher from "@/components/ThemeSwitcher";
+import UpdateHargaButton from "@/components/UpdateHargaButton";
 
 // Pilihan urutan untuk dropdown (nilai tampilan + kunci urut).
 const OPSI_URUT: { kunci: KunciUrut; label: string }[] = [
@@ -56,6 +57,7 @@ export default function Home() {
     removeStock,
     resetSample,
     gantiSemua,
+    perbaruiHarga,
   } = usePortfolio();
 
   // Tab yang sedang aktif.
@@ -223,6 +225,10 @@ export default function Home() {
                 + Tambah
               </button>
             </div>
+          </div>
+          {/* Ambil harga terakhir dari Yahoo Finance (delay ±15 menit). */}
+          <div className="mb-3">
+            <UpdateHargaButton stocks={stocks} onHarga={perbaruiHarga} />
           </div>
           <HoldingsList
             stocks={sahamTerurut}
