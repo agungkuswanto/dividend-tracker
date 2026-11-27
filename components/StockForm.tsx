@@ -7,7 +7,7 @@
 // dan daftar jadwal dividen (DPS + bulan + label).
 // =============================================================
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Stock, DividendPayment } from "@/lib/types";
 import { NAMA_BULAN } from "@/lib/calculations";
 import { PALET, pilihWarnaBaru } from "@/lib/colors";
@@ -80,6 +80,9 @@ export default function StockForm({
   // State untuk tombol "Ambil harga" dari Yahoo Finance.
   const [ambilLoading, setAmbilLoading] = useState(false);
   const [ambilPesan, setAmbilPesan] = useState("");
+  // Mengingat kode yang sudah dicoba auto-ambil, agar tidak mengambil
+  // berulang-ulang untuk kode yang sama setiap kali keluar dari kolom.
+  const kodeAutoTerakhir = useRef("");
 
   // Ambil harga terakhir untuk kode yang sedang diketik, lalu isi "Harga sekarang".
   const ambilHargaSekarang = async () => {
@@ -104,6 +107,18 @@ export default function StockForm({
     } finally {
       setAmbilLoading(false);
     }
+  };
+
+  // Dipanggil saat kolom kode kehilangan fokus (user selesai mengetik kode).
+  // Otomatis mengisi harga, TAPI hanya bila: kode terisi, harga masih kosong
+  // (jangan timpa nilai yang sudah ada / mode edit), dan belum pernah dicoba.
+  const onBlurKode = () => {
+    const kode = code.trim().toUpperCase();
+    if (!kode) return;
+    if (currentPrice.trim() !== "") return; // sudah ada harga -> biarkan
+    if (kodeAutoTerakhir.current === kode) return; // sudah dicoba utk kode ini
+    kodeAutoTerakhir.current = kode;
+    ambilHargaSekarang();
   };
 
   // --- Fungsi untuk mengelola baris dividen ---
@@ -195,6 +210,7 @@ export default function StockForm({
               className={inputClass + " uppercase"}
               value={code}
               onChange={(e) => setCode(e.target.value)}
+              onBlur={onBlurKode}
               placeholder="BBRI"
               maxLength={6}
             />
