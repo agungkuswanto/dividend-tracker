@@ -12,6 +12,7 @@ import { Stock, DividendPayment } from "@/lib/types";
 import { NAMA_BULAN } from "@/lib/calculations";
 import { PALET, pilihWarnaBaru } from "@/lib/colors";
 import { DAFTAR_SEKTOR } from "@/lib/sectors";
+import { ambilHarga } from "@/lib/hargaApi";
 
 // Versi "bisa diedit" dari pembayaran dividen: dps disimpan sebagai
 // string supaya kolom input boleh kosong saat sedang diketik.
@@ -75,6 +76,35 @@ export default function StockForm({
       : []
   );
   const [error, setError] = useState("");
+
+  // State untuk tombol "Ambil harga" dari Yahoo Finance.
+  const [ambilLoading, setAmbilLoading] = useState(false);
+  const [ambilPesan, setAmbilPesan] = useState("");
+
+  // Ambil harga terakhir untuk kode yang sedang diketik, lalu isi "Harga sekarang".
+  const ambilHargaSekarang = async () => {
+    const kode = code.trim().toUpperCase();
+    if (!kode) {
+      setAmbilPesan("Isi kode saham dulu.");
+      return;
+    }
+    setAmbilLoading(true);
+    setAmbilPesan("");
+    try {
+      const { hasil } = await ambilHarga([kode]);
+      const harga = hasil[kode];
+      if (typeof harga === "number") {
+        setCurrentPrice(String(harga));
+        setAmbilPesan(`Harga ${kode} terisi: ${harga.toLocaleString("id-ID")}`);
+      } else {
+        setAmbilPesan(`Harga ${kode} tidak ditemukan.`);
+      }
+    } catch {
+      setAmbilPesan("Gagal mengambil harga. Coba lagi.");
+    } finally {
+      setAmbilLoading(false);
+    }
+  };
 
   // --- Fungsi untuk mengelola baris dividen ---
   const tambahDividen = () =>
@@ -207,7 +237,18 @@ export default function StockForm({
             />
           </label>
           <label className="block">
-            <span className="text-xs text-muted">Harga sekarang</span>
+            <div className="flex items-center justify-between">
+              <span className="text-xs text-muted">Harga sekarang</span>
+              {/* Ambil harga terakhir dari Yahoo untuk kode yang diketik. */}
+              <button
+                type="button"
+                onClick={ambilHargaSekarang}
+                disabled={ambilLoading}
+                className="text-[10px] font-medium text-gold hover:underline disabled:opacity-60"
+              >
+                {ambilLoading ? "Mengambil…" : "🔄 Ambil"}
+              </button>
+            </div>
             <input
               className={inputClass}
               type="number"
@@ -218,6 +259,10 @@ export default function StockForm({
             />
           </label>
         </div>
+        {/* Umpan balik tombol Ambil harga. */}
+        {ambilPesan && (
+          <p className="mt-1 text-[11px] text-muted">{ambilPesan}</p>
+        )}
 
         {/* Sektor (opsional) */}
         <label className="mt-3 block">
